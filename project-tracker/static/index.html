@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Tracker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="sidebar">
+        <div class="logo">
+            <span>⚡</span> ProjectTracker
+        </div>
+        <nav>
+            <a href="#" class="nav-item active" onclick="showProjects()">Projects</a>
+            <a href="#" class="nav-item">Reports</a>
+            <a href="#" class="nav-item">Settings</a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <div id="projects-view">
+            <h1>Projects</h1>
+            <div class="card-grid" id="projects-list">
+                <!-- Projects will be loaded here -->
+            </div>
+        </div>
+
+        <div id="project-detail-view" style="display: none;">
+            <button class="btn btn-secondary" onclick="showProjects()" style="margin-bottom: 1rem;">← Back to
+                Projects</button>
+            <h1 id="project-name">Project Name</h1>
+            <p id="project-description">Description...</p>
+
+            <div style="margin-top: 2rem; display: flex; justify-content: space-between; align-items: center;">
+                <h2>Sessions</h2>
+                <button class="btn" onclick="toggleSessionForm()">+ Start Session</button>
+            </div>
+
+            <div id="new-session-form"
+                style="display: none; margin-top: 1rem; padding: 1rem; background: var(--card-bg); border: 1px solid var(--border); border-radius: 0.5rem;">
+                <input type="text" id="session-note" placeholder="Session note..." style="margin-bottom: 0.5rem;">
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn" onclick="confirmStartSession()">Start</button>
+                    <button class="btn btn-secondary" onclick="toggleSessionForm()">Cancel</button>
+                </div>
+            </div>
+
+            <div class="card-grid" id="sessions-list" style="margin-top: 1rem;">
+                <!-- Sessions will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentProjectId = null;
+
+        async function loadProjects() {
+            const res = await fetch('/api/projects');
+            const projects = await res.json();
+            const container = document.getElementById('projects-list');
+            container.innerHTML = projects.map(p => `
+                <a href="#" class="card" onclick="viewProject(${p.id})">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <h3>${p.name}</h3>
+                        <span class="status-badge status-${p.status}">${p.status}</span>
+                    </div>
+                    <p>${p.description}</p>
+                </a>
+            `).join('');
+        }
+
+        async function viewProject(id) {
+            currentProjectId = id;
+            document.getElementById('projects-view').style.display = 'none';
+            document.getElementById('project-detail-view').style.display = 'block';
+            document.getElementById('new-session-form').style.display = 'none'; // Reset form
+
+            const res = await fetch(`/api/projects/${id}`);
+            const project = await res.json();
+
+            document.getElementById('project-name').textContent = project.name;
+            document.getElementById('project-description').textContent = project.description;
+
+            const sessionsContainer = document.getElementById('sessions-list');
+            if (project.sessions && project.sessions.length > 0) {
+                sessionsContainer.innerHTML = project.sessions.map(s => `
+                    <div class="card">
+                        <h3>${new Date(s.start_time).toLocaleString()}</h3>
+                        <p>${s.note || 'No notes'}</p>
+                        <p>Duration: ${s.end_time ? calculateDuration(s.start_time, s.end_time) : 'Running...'}</p>
+                    </div>
+                `).join('');
+            } else {
+                sessionsContainer.innerHTML = '<p>No sessions found.</p>';
+            }
+        }
+
+        function calculateDuration(start, end) {
+            const diff = new Date(end) - new Date(start);
+            const minutes = Math.floor(diff / 60000);
+            return `${minutes} mins`;
+        }
+
+        function showProjects() {
+            document.getElementById('projects-view').style.display = 'block';
+            document.getElementById('project-detail-view').style.display = 'none';
+            currentProjectId = null;
+            loadProjects();
+        }
+
+        function toggleSessionForm() {
+            const form = document.getElementById('new-session-form');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+            if (form.style.display === 'block') {
+                document.getElementById('session-note').focus();
+            }
+        }
+
+        async function confirmStartSession() {
+            if (!currentProjectId) return;
+            const noteInput = document.getElementById('session-note');
+            const note = noteInput.value;
+
+            await fetch('/api/sessions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ project_id: currentProjectId, note: note })
+            });
+
+            noteInput.value = ''; // Reset
+            toggleSessionForm();
+            viewProject(currentProjectId); // Reload
+        }
+
+        // Initial load
+        loadProjects();
+    </script>
+</body>
+
+</html>
