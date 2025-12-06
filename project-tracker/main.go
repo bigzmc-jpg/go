@@ -45,7 +45,7 @@ func main() {
 	// Seed some sessions
 	sessions = append(sessions, Session{ID: 1, ProjectID: 1, StartTime: time.Now().Add(-2 * time.Hour), EndTime: time.Now().Add(-1 * time.Hour), Note: "Initial planning"})
 
-	http.Handle("/", http.FileServer(http.Dir("./static")))
+	http.Handle("/", http.FileServer(http.Dir("./frontend/dist")))
 	http.HandleFunc("/api/projects", handleProjects)
 	http.HandleFunc("/api/projects/", handleProjectDetail)
 	http.HandleFunc("/api/sessions", handleSessions)

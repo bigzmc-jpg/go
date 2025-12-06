@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Tracker</title>
+</head>
+
+<body>
+  <div class="sidebar">
+    <div class="logo">
+      <span>⚡</span> ProjectTracker
+    </div>
+    <nav>
+      <a href="#" class="nav-item active">Projects</a>
+      <a href="#" class="nav-item">Reports</a>
+      <a href="#" class="nav-item">Settings</a>
+    </nav>
+  </div>
+
+  <div class="main-content">
+    <div id="projects-view">
+      <h1>Projects</h1>
+      <div class="card-grid" id="projects-list">
+        <!-- Projects will be loaded here -->
+      </div>
+    </div>
+
+    <div id="project-detail-view" style="display: none;">
+      <button class="btn btn-secondary" style="margin-bottom: 1rem;">← Back to Projects</button>
+      <h1 id="project-name">Project Name</h1>
+      <p id="project-description">Description...</p>
+
+      <div style="margin-top: 2rem; display: flex; justify-content: space-between; align-items: center;">
+        <h2>Sessions</h2>
+        <button class="btn" id="start-session-btn">+ Start Session</button>
+      </div>
+
+      <div id="new-session-form"
+        style="display: none; margin-top: 1rem; padding: 1rem; background: var(--card-bg); border: 1px solid var(--border); border-radius: 0.5rem;">
+        <input type="text" id="session-note" placeholder="Session note..." style="margin-bottom: 0.5rem;">
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="btn" id="confirm-session-btn">Start</button>
+          <button class="btn btn-secondary" id="cancel-session-btn">Cancel</button>
+        </div>
+      </div>
+
+      <div class="card-grid" id="sessions-list" style="margin-top: 1rem;">
+        <!-- Sessions will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>
